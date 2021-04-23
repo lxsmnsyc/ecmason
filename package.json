@@ -39,5 +39,19 @@
     "test": "pridepack test --passWithNoTests",
     "clean": "pridepack clean",
     "watch": "pridepack watch"
-  }
+  },
+  "description": "JSON parse/stringify for modern ES objects",
+  "repository": {
+    "url": "https://github.com/lxsmnsyc/ecmason.git",
+    "type": "git"
+  },
+  "homepage": "https://github.com/lxsmnsyc/ecmason",
+  "bugs": {
+    "url": "https://github.com/lxsmnsyc/ecmason/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Alexis Munsayac",
+  "private": false
 }
