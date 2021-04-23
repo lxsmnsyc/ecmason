@@ -151,7 +151,7 @@ The following are values and classes supported by `ecmason`, ordered from highes
   - `-0`
 - Primitive Transformers
   - `BigInt`
-  - `Symbol`
+  - `Symbol` (disabled; needs `ES2019`)
   - `number`, `string`, `boolean` and `null`
   - `undefined`
 - Object Transformers
