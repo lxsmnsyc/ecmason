@@ -1,0 +1,13 @@
+{
+  "root": true,
+  "extends": [
+    "lxsmnsyc/typescript"
+  ],
+  "parserOptions": {
+    "project": "./tsconfig.eslint.json"
+  },
+  "rules": {
+    "@typescript-eslint/no-unsafe-return": "off",
+    "@typescript-eslint/no-unsafe-assignment": "off"
+  }
+}
