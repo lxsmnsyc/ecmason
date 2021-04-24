@@ -332,27 +332,22 @@ addTransformer<Date, string>('object', {
   deserialize: (value) => new Date(value),
 });
 
-addTransformer('object', withRecursionTracker<Map<any, any>, [ECMASon<any>, ECMASon<any>][]>({
+addTransformer('object', withRecursionTracker<Map<any, any>, ECMASon<any>[]>({
   tag: 'MAP',
   check: (value): value is Map<any, any> => (
     value instanceof Map
   ),
   serialize: (value, context) => (
     Array.from(value.entries()).map(
-      ([key, val]) => [
-        serialize(key, context),
-        serialize(val, context),
-      ],
+      ([key, val]) => serialize([key, val], context),
     )
   ),
   deserialize: (value, context: WithRecursionContext<Map<any, any>>) => {
     const map = new Map<any, any>();
     context.setRef?.(map);
-    value.forEach(([key, val]) => {
-      map.set(
-        deserialize(key, context),
-        deserialize(val, context),
-      );
+    value.forEach((source) => {
+      const [key, val] = deserialize(source, context);
+      map.set(key, val);
     });
     return map;
   },
