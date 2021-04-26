@@ -205,15 +205,6 @@ addTransformer<number, null>('literal', {
 });
 
 addTransformer<number, number>('literal', {
-  tag: '+0',
-  check: (value): value is number => (
-    Object.is(value, +0)
-  ),
-  serialize: () => 0,
-  deserialize: () => +0,
-});
-
-addTransformer<number, number>('literal', {
   tag: '-0',
   check: (value): value is number => (
     Object.is(value, -0)

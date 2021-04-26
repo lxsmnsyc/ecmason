@@ -147,7 +147,6 @@ The following are values and classes supported by `ecmason`, ordered from highes
   - `NaN`
   - `Number.POSITIVE_INFINITY` or `Infinity`
   - `Number.NEGATIVE_INFINITY` or `-Infinity`
-  - `+0`
   - `-0`
 - Primitive Transformers
   - `BigInt`
