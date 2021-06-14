@@ -26,6 +26,9 @@
  * @copyright Alexis Munsayac 2021
  */
 
+import EcmasonDeserializeError from './EcmasonDeserializeError';
+import EcmasonSerializeError from './EcmasonSerializeError';
+
 export type BaseJSON = number | string | boolean | null;
 
 export interface ECMASon<R> {
@@ -116,7 +119,7 @@ export function deserialize<T, R>(
     }
   }
 
-  throw new Error(`value of tag "${value.tag}" cannot be deserialized`);
+  throw new EcmasonDeserializeError(value.tag);
 }
 
 export function serialize<T, R>(
@@ -164,7 +167,7 @@ export function serialize<T, R>(
     }
   }
 
-  throw new Error('value cannot be serialized');
+  throw new EcmasonSerializeError(value);
 }
 
 export function stringify<T>(value: T): string {
