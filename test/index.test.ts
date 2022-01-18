@@ -1,4 +1,6 @@
-import { parse, stringify } from '../src';
+import { parse, setup, stringify } from '../src';
+
+setup();
 
 describe('Literals', () => {
   describe('NaN', () => {

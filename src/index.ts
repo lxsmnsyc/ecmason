@@ -177,85 +177,6 @@ export function stringify<T>(value: T): string {
 export function parse<T>(value: string): T {
   return deserialize(JSON.parse(value));
 }
-/**
- * Literal transformers
- */
-addTransformer<number, null>('literal', {
-  tag: 'NAN',
-  check: (value): value is number => (
-    Number.isNaN(value)
-  ),
-  serialize: () => null,
-  deserialize: () => NaN,
-});
-
-addTransformer<number, null>('literal', {
-  tag: 'INF',
-  check: (value): value is number => (
-    value === Number.POSITIVE_INFINITY
-  ),
-  serialize: () => null,
-  deserialize: () => Number.POSITIVE_INFINITY,
-});
-
-addTransformer<number, null>('literal', {
-  tag: '-INF',
-  check: (value): value is number => (
-    value === Number.NEGATIVE_INFINITY
-  ),
-  serialize: () => null,
-  deserialize: () => Number.NEGATIVE_INFINITY,
-});
-
-addTransformer<number, number>('literal', {
-  tag: '-0',
-  check: (value): value is number => (
-    Object.is(value, -0)
-  ),
-  serialize: () => 0,
-  deserialize: () => -0,
-});
-/**
- * Primitive transformers
- */
-addTransformer<bigint, string>('primitive', {
-  tag: 'BIGINT',
-  check: (value): value is bigint => (
-    typeof value === 'bigint'
-  ),
-  serialize: (value) => value.toString(),
-  deserialize: (value) => BigInt(value),
-});
-
-// addTransformer<symbol, string | number | null>('primitive', {
-//   tag: 'SYMBOL',
-//   check: (value): value is symbol => (
-//     typeof value === 'symbol'
-//   ),
-//   serialize: (value) => value.description ?? null,
-//   deserialize: (value) => Symbol(value === null ? undefined : value),
-// });
-
-addTransformer<BaseJSON, BaseJSON>('primitive', {
-  tag: 'PRIMITIVE',
-  check: (value): value is BaseJSON => (
-    typeof value === 'number'
-    || typeof value === 'string'
-    || typeof value === 'boolean'
-    || value === null
-  ),
-  serialize: (value) => value,
-  deserialize: (value) => value,
-});
-
-addTransformer<undefined, null>('primitive', {
-  tag: 'UNDEFINED',
-  check: (value): value is undefined => (
-    typeof value === 'undefined'
-  ),
-  serialize: () => null,
-  deserialize: () => undefined,
-});
 
 export function withRecursionTracker<T, R>(
   transformer: ECMASonTransformer<T, R>,
@@ -305,106 +226,188 @@ export function withRecursionTracker<T, R>(
   };
 }
 
-/**
- * Class (object) transformers
- */
-addTransformer<RegExp, [string, string]>('object', {
-  tag: 'REGEXP',
-  check: (value): value is RegExp => (
-    value instanceof RegExp
-  ),
-  serialize: (value) => [value.source, value.flags],
-  deserialize: ([source, flags]) => new RegExp(source, flags),
-});
-
-addTransformer<Date, string>('object', {
-  tag: 'DATE',
-  check: (value): value is Date => (
-    value instanceof Date
-  ),
-  serialize: (value) => value.toISOString(),
-  deserialize: (value) => new Date(value),
-});
-
-addTransformer('object', withRecursionTracker<Map<any, any>, ECMASon<any>[]>({
-  tag: 'MAP',
-  check: (value): value is Map<any, any> => (
-    value instanceof Map
-  ),
-  serialize: (value, context) => (
-    Array.from(value.entries()).map(
-      ([key, val]) => serialize([key, val], context),
-    )
-  ),
-  deserialize: (value, context: WithRecursionContext<Map<any, any>>) => {
-    const map = new Map<any, any>();
-    context.setRef?.(map);
-    value.forEach((source) => {
-      const [key, val] = deserialize(source, context);
-      map.set(key, val);
-    });
-    return map;
-  },
-}));
-
-addTransformer('object', withRecursionTracker<Set<any>, ECMASon<any>[]>({
-  tag: 'SET',
-  check: (value): value is Set<any> => (
-    value instanceof Set
-  ),
-  serialize: (value, context) => (
-    Array.from(value).map(
-      (val) => serialize(val, context),
-    )
-  ),
-  deserialize: (value, context: WithRecursionContext<Set<any>>) => {
-    const set = new Set<any>();
-    context.setRef?.(set);
-    value.forEach((val) => {
-      set.add(deserialize(val, context));
-    });
-    return set;
-  },
-}));
-
-addTransformer('object', withRecursionTracker<Array<any>, ECMASon<any>[]>({
-  tag: 'ARRAY',
-  check: (value): value is Array<any> => (
-    value instanceof Array
-  ),
-  serialize: (value, context) => (
-    value.map((current) => serialize(current, context))
-  ),
-  deserialize: (value, context: WithRecursionContext<any[]>) => {
-    const array: any[] = [];
-    context.setRef?.(array);
-    value.forEach((current, key) => {
-      array[key] = deserialize(current, context);
-    });
-    return array;
-  },
-}));
-
-/**
- * Final transformer
- */
-addTransformer(
-  'final',
-  withRecursionTracker<Record<string, unknown>, { [key: string]: ECMASon<any> }>({
-    tag: 'OBJECT',
-    check: (value): value is Record<string, unknown> => (
-      typeof value === 'object'
+export function setup(): void {
+  /**
+   * Literal transformers
+   */
+  addTransformer<number, null>('literal', {
+    tag: 'NAN',
+    check: (value): value is number => (
+      Number.isNaN(value)
     ),
-    serialize: (value, context) => Object.fromEntries(
-      Object.entries(value).map(([key, val]) => [key, serialize(val, context)]),
+    serialize: () => null,
+    deserialize: () => NaN,
+  });
+
+  addTransformer<number, null>('literal', {
+    tag: 'INF',
+    check: (value): value is number => (
+      value === Number.POSITIVE_INFINITY
     ),
-    deserialize: (value, context: WithRecursionContext<Record<string, unknown>>) => {
-      const obj: Record<string, unknown> = {};
-      context.setRef?.(obj);
-      Object.entries(value).forEach(([key, val]) => {
-        obj[key] = deserialize(val, context);
+    serialize: () => null,
+    deserialize: () => Number.POSITIVE_INFINITY,
+  });
+
+  addTransformer<number, null>('literal', {
+    tag: '-INF',
+    check: (value): value is number => (
+      value === Number.NEGATIVE_INFINITY
+    ),
+    serialize: () => null,
+    deserialize: () => Number.NEGATIVE_INFINITY,
+  });
+
+  addTransformer<number, number>('literal', {
+    tag: '-0',
+    check: (value): value is number => (
+      Object.is(value, -0)
+    ),
+    serialize: () => 0,
+    deserialize: () => -0,
+  });
+  /**
+   * Primitive transformers
+   */
+  addTransformer<bigint, string>('primitive', {
+    tag: 'BIGINT',
+    check: (value): value is bigint => (
+      typeof value === 'bigint'
+    ),
+    serialize: (value) => value.toString(),
+    deserialize: (value) => BigInt(value),
+  });
+
+  // addTransformer<symbol, string | number | null>('primitive', {
+  //   tag: 'SYMBOL',
+  //   check: (value): value is symbol => (
+  //     typeof value === 'symbol'
+  //   ),
+  //   serialize: (value) => value.description ?? null,
+  //   deserialize: (value) => Symbol(value === null ? undefined : value),
+  // });
+
+  addTransformer<BaseJSON, BaseJSON>('primitive', {
+    tag: 'PRIMITIVE',
+    check: (value): value is BaseJSON => (
+      typeof value === 'number'
+      || typeof value === 'string'
+      || typeof value === 'boolean'
+      || value === null
+    ),
+    serialize: (value) => value,
+    deserialize: (value) => value,
+  });
+
+  addTransformer<undefined, null>('primitive', {
+    tag: 'UNDEFINED',
+    check: (value): value is undefined => (
+      typeof value === 'undefined'
+    ),
+    serialize: () => null,
+    deserialize: () => undefined,
+  });
+
+  /**
+   * Class (object) transformers
+   */
+  addTransformer<RegExp, [string, string]>('object', {
+    tag: 'REGEXP',
+    check: (value): value is RegExp => (
+      value instanceof RegExp
+    ),
+    serialize: (value) => [value.source, value.flags],
+    deserialize: ([source, flags]) => new RegExp(source, flags),
+  });
+  
+  addTransformer<Date, string>('object', {
+    tag: 'DATE',
+    check: (value): value is Date => (
+      value instanceof Date
+    ),
+    serialize: (value) => value.toISOString(),
+    deserialize: (value) => new Date(value),
+  });
+  
+  addTransformer('object', withRecursionTracker<Map<any, any>, ECMASon<any>[]>({
+    tag: 'MAP',
+    check: (value): value is Map<any, any> => (
+      value instanceof Map
+    ),
+    serialize: (value, context) => (
+      Array.from(value.entries()).map(
+        ([key, val]) => serialize([key, val], context),
+      )
+    ),
+    deserialize: (value, context: WithRecursionContext<Map<any, any>>) => {
+      const map = new Map<any, any>();
+      context.setRef?.(map);
+      value.forEach((source) => {
+        const [key, val] = deserialize(source, context);
+        map.set(key, val);
       });
-      return obj;
+      return map;
     },
-  }),
-);
+  }));
+  
+  addTransformer('object', withRecursionTracker<Set<any>, ECMASon<any>[]>({
+    tag: 'SET',
+    check: (value): value is Set<any> => (
+      value instanceof Set
+    ),
+    serialize: (value, context) => (
+      Array.from(value).map(
+        (val) => serialize(val, context),
+      )
+    ),
+    deserialize: (value, context: WithRecursionContext<Set<any>>) => {
+      const set = new Set<any>();
+      context.setRef?.(set);
+      value.forEach((val) => {
+        set.add(deserialize(val, context));
+      });
+      return set;
+    },
+  }));
+  
+  addTransformer('object', withRecursionTracker<Array<any>, ECMASon<any>[]>({
+    tag: 'ARRAY',
+    check: (value): value is Array<any> => (
+      value instanceof Array
+    ),
+    serialize: (value, context) => (
+      value.map((current) => serialize(current, context))
+    ),
+    deserialize: (value, context: WithRecursionContext<any[]>) => {
+      const array: any[] = [];
+      context.setRef?.(array);
+      value.forEach((current, key) => {
+        array[key] = deserialize(current, context);
+      });
+      return array;
+    },
+  }));
+  
+  /**
+   * Final transformer
+   */
+  addTransformer(
+    'final',
+    withRecursionTracker<Record<string, unknown>, { [key: string]: ECMASon<any> }>({
+      tag: 'OBJECT',
+      check: (value): value is Record<string, unknown> => (
+        typeof value === 'object'
+      ),
+      serialize: (value, context) => Object.fromEntries(
+        Object.entries(value).map(([key, val]) => [key, serialize(val, context)]),
+      ),
+      deserialize: (value, context: WithRecursionContext<Record<string, unknown>>) => {
+        const obj: Record<string, unknown> = {};
+        context.setRef?.(obj);
+        Object.entries(value).forEach(([key, val]) => {
+          obj[key] = deserialize(val, context);
+        });
+        return obj;
+      },
+    }),
+  );
+}

@@ -17,7 +17,10 @@ yarn add ecmason
 ## Usage
 
 ```tsx
-import { parse, stringify } from 'ecmason';
+import { parse, stringify, setup } from 'ecmason';
+
+// Call setup first
+setup();
 
 // Support for Map
 const a = new Map([
