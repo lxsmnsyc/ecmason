@@ -318,7 +318,7 @@ export function setup(): void {
     serialize: (value) => [value.source, value.flags],
     deserialize: ([source, flags]) => new RegExp(source, flags),
   });
-  
+
   addTransformer<Date, string>('object', {
     tag: 'DATE',
     check: (value): value is Date => (
@@ -327,7 +327,7 @@ export function setup(): void {
     serialize: (value) => value.toISOString(),
     deserialize: (value) => new Date(value),
   });
-  
+
   addTransformer('object', withRecursionTracker<Map<any, any>, ECMASon<any>[]>({
     tag: 'MAP',
     check: (value): value is Map<any, any> => (
@@ -348,7 +348,7 @@ export function setup(): void {
       return map;
     },
   }));
-  
+
   addTransformer('object', withRecursionTracker<Set<any>, ECMASon<any>[]>({
     tag: 'SET',
     check: (value): value is Set<any> => (
@@ -368,7 +368,7 @@ export function setup(): void {
       return set;
     },
   }));
-  
+
   addTransformer('object', withRecursionTracker<Array<any>, ECMASon<any>[]>({
     tag: 'ARRAY',
     check: (value): value is Array<any> => (
@@ -386,7 +386,7 @@ export function setup(): void {
       return array;
     },
   }));
-  
+
   /**
    * Final transformer
    */
